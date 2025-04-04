@@ -1,0 +1,51 @@
+# This is the password for using LangSmith (a tool that tracks how your chatbot performs)
+LANGCHAIN_API_KEY="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"
+# OPENAI_API=""  # This line is commented out (not being used)
+LANGCHAIN_PROJECT="Q&AChatbot"  # This names your project
+
+
+# These lines bring in tools we need (like getting ingredients for a recipe)
+from langchain_openai import ChatOpenAI    # Tool to use OpenAI's chatbots
+from langchain_core.prompts import ChatPromptTemplate  # Tool to create instructions for AI
+from langchain_core.output_parsers import StrOutputParser  # Tool to handle AI's answers
+from langchain_community.llms import Ollama  # Tool to use Llama2 AI model
+
+
+import streamlit as st  # Tool to make a simple website
+import os  # Tool to work with computer settings
+from dotenv import load_dotenv  # Tool to load passwords from a file
+
+# Load any passwords or settings from a hidden file
+load_dotenv()
+
+##environment variables call
+##os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")  # This line is commented out
+
+##Langsmith tracking
+# os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")  # This line is commented out
+os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY  # Use the password we set above
+os.environ["LANGCHAIN_TRACING_V2"]="true"  # Turn on tracking to see how our chatbot performs
+
+##creating chatbot
+# This tells the AI how to behave - like giving it a job description
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant. Please provide response to the user queries"),
+    ("user", "Question: {question}")  # {question} will be replaced with what the user types
+])
+
+#streamlit framework
+st.title("Langchain Demo With LLama2 API")  # Add a title to our website
+input_text=st.text_input("Search the topic you want")  # Create a box for typing questions
+
+#open AI LLM call
+llm=Ollama(model="llama2")  # Choose Llama2 as our AI brain
+output_parser=StrOutputParser()  # Tool to handle the AI's text responses
+
+##chain
+# Connect everything together like a pipeline
+chain=prompt|llm|output_parser
+
+# If the user typed something in the box...
+if input_text:
+    # Show the AI's answer on the website
+    st.write(chain.invoke({'question':input_text}))
